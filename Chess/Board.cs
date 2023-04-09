@@ -11,6 +11,7 @@ enum TypeFigure
     Queen = 8,
     Rook = 5
 }
+
 public class Board
 {
     public Board()
@@ -56,13 +57,13 @@ public class Board
 
     private bool Simulate(Coordinate currentCoordinate, Coordinate nextCoordinate)
     {
-        var simulateBoard = new Board(Figures.Select(n=>n.Copy()).ToList(), CurrentColor, StatusGame);
-        var res =  simulateBoard.MoveWithoutCheck(currentCoordinate, nextCoordinate);
+        var simulateBoard = new Board(Figures.Select(n => n.Copy()).ToList(), CurrentColor, StatusGame);
+        var res = simulateBoard.MoveWithoutCheck(currentCoordinate, nextCoordinate);
         if (!res)
         {
             return false;
         }
-        
+
         CheckCheck(simulateBoard);
         if (simulateBoard.StatusGame == StatusGame.Check)
         {
@@ -72,10 +73,15 @@ public class Board
 
         return true;
     }
-  
+
 
     public bool MoveWithCheck(Coordinate currentCoordinate, Coordinate nextCoordinate)
     {
+        if (StatusGame == StatusGame.Mat)
+        {
+            return false;
+        }
+
         var isHas = false;
         var figure = Figures.FirstOrDefault(n => n.Coordinate == currentCoordinate);
         var figureNext = Figures.FirstOrDefault(n => n.Coordinate == nextCoordinate);
@@ -125,11 +131,50 @@ public class Board
             }
 
             CheckCheck(this);
+            if (StatusGame == StatusGame.Check)
+            {
+                CheckMat(this);
+            }
 
             return true;
         }
 
         return false;
+    }
+
+    private bool SimulateMat()
+    {
+        var simulateBoard = new Board(Figures.Select(n => n.Copy()).ToList(), CurrentColor, StatusGame);
+        var figures = simulateBoard.Figures.Where(n => n.Color == CurrentColor);
+        foreach (var figure in figures)
+        {
+            figure.CreatePossibleMove(simulateBoard);
+            if (figure.PossibleMoves.Count == 0)
+            {
+                continue;
+            }
+
+            foreach (var coordinate in figure.PossibleMoves.ToList())
+            {
+                simulateBoard.MoveWithoutCheck(figure.Coordinate, coordinate);
+                CheckCheck(simulateBoard);
+                if (simulateBoard.StatusGame == StatusGame.Normal)
+                {
+                    return false;
+                }
+
+                simulateBoard = new Board(Figures.Select(n => n.Copy()).ToList(), CurrentColor, StatusGame);
+            }
+        }
+
+        return true;
+    }
+
+    private void CheckMat(Board board)
+    {
+        var resSimulate = SimulateMat();
+        if (resSimulate)
+            StatusGame = StatusGame.Mat;
     }
 
     public bool MoveWithoutCheck(Coordinate currentCoordinate, Coordinate nextCoordinate)
