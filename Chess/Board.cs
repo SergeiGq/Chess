@@ -2,16 +2,6 @@
 
 namespace Chess;
 
-enum TypeFigure
-{
-    King = 6,
-    Pawn = 1,
-    Knight = 2,
-    Bishop = 3,
-    Queen = 8,
-    Rook = 5
-}
-
 public class Board
 {
     public Board()
@@ -162,7 +152,6 @@ public class Board
                 {
                     return false;
                 }
-
                 simulateBoard = new Board(Figures.Select(n => n.Copy()).ToList(), CurrentColor, StatusGame);
             }
         }
@@ -258,12 +247,11 @@ public class Board
     public void Print()
     {
         var colorDelta = '♚' - '♔';
-        Figure figure;
         for (int i = 7; i >= 0; i--)
         {
             for (int j = 0; j < 8; j++)
             {
-                figure = Figures.FirstOrDefault(n => n.Coordinate == new Coordinate(i, j));
+                var figure = Figures.FirstOrDefault(n => n.Coordinate == new Coordinate(i, j));
                 if (figure != null)
                 {
                     if (figure.Color == Color.Black)
